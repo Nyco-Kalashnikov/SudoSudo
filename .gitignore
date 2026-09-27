@@ -4,6 +4,7 @@ ia.env
 !.env.example
 
 # Build PyInstaller
+*.exe
 build_*/
 dist_*/
 *.spec
