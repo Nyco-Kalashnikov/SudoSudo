@@ -1,0 +1,30 @@
+# Segredos - NUNCA commitar
+ia.env
+*.env
+!.env.example
+
+# Build PyInstaller
+build_*/
+dist_*/
+*.spec
+*.manifest
+
+# Dados locais / gerados
+chroma_data/
+*.sqlite3
+memoria_sudosudo.json
+achados.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Editores / SO
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
