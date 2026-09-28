@@ -18,6 +18,14 @@ os achados por pontuacao.
 
 ## Instalacao
 
+### Instale com o [Harbor](https://github.com/kauanmezavila/harbor)
+
+```bash
+harbor install Nyco-Kalashnikov/SudoSudo@latest
+```
+
+### Ou manualmente
+
 ```bash
 git clone https://github.com/Nyco-Kalashnikov/SudoSudo.git
 cd SudoSudo
@@ -69,13 +77,13 @@ A chave da API **nao** e inclusa no binario.
 
 ## Estrutura
 
-| Arquivo | Funcao |
-|---|---|
-| `main.py` | UI, scanner e pontuacao |
-| `ia_service.py` | Integracao com OpenRouter |
-| `memoria.py` | Memoria persistente (ChromaDB + fallback JSON) |
-| `compile.txt` | Comando de build (PyInstaller) |
-| `sudosudo.ico` | Icone |
+| Arquivo         | Funcao                                         |
+| --------------- | ---------------------------------------------- |
+| `main.py`       | UI, scanner e pontuacao                        |
+| `ia_service.py` | Integracao com OpenRouter                      |
+| `memoria.py`    | Memoria persistente (ChromaDB + fallback JSON) |
+| `compile.txt`   | Comando de build (PyInstaller)                 |
+| `sudosudo.ico`  | Icone                                          |
 
 ## Licenca
 
