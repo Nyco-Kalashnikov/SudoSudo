@@ -1,0 +1,24 @@
+project: SudoSudo >w<
+description: ip thing
+
+variants:
+  - type: .harb
+    path: any/SudoSudo-Any-linux-any-[HARBOR].harb
+    version: 1.0.0
+    os: Any
+    architecture: Any
+    runtime: python>=3.12
+
+  - type: .harb
+    path: linux/SudoSudo-Any-linux-any-[HARBOR].harb
+    version: 1.0.0
+    os: linux
+    architecture: Any
+    runtime: python>=3.12
+
+  - type: .harb
+    path: windows/SudoSudo-any-windows-[HARBOR].harb
+    version: 1.0.0
+    os: windows
+    architecture: Any
+    runtime: python>=3.12
