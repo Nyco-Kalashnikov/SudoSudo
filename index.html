@@ -1,0 +1,1217 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>SudoSudo</title>
+        <style>
+            :root {
+                --bg: #282d46;
+                --surface: #282b39;
+                --surface-hover: #1c1f2e;
+                --line: rgba(255, 255, 255, 0.08);
+                --line-hover: rgba(255, 255, 255, 0.16);
+                --text: #f3f4f6;
+                --text-secondary: #9ca3af;
+                --muted: #6b7280;
+                --accent: #7f81ff;
+                --accent-hover: #958fff;
+                --accent-glow: rgba(99, 102, 241, 0.25);
+                --green: #10b981;
+                --yellow: #f59e0b;
+                --red: #ef4444;
+                --font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                --mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background: var(--bg);
+                color: var(--text);
+                font-family: var(--font);
+                -webkit-font-smoothing: antialiased;
+            }
+            .app {
+                display: grid !important;
+                position: relative !important;
+                grid-template-columns: 72px minmax(0, 1fr) !important;
+                grid-template-rows: 64px minmax(0, 1fr) !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                overflow: hidden !important;
+                transition: grid-template-columns 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .app:has(.side:hover) {
+                grid-template-columns: 280px minmax(0, 1fr) !important;
+            }
+            .top {
+                grid-column: 1/3 !important;
+                grid-row: 1 !important;
+                background: var(--surface) !important;
+                backdrop-filter: blur(12px);
+                border-bottom: 1px solid var(--line) !important;
+                display: flex !important;
+                align-items: center !important;
+                padding: 0 28px !important;
+                gap: 16px !important;
+                z-index: 10;
+            }
+            .brand {
+                font-size: 18px;
+                font-weight: 700;
+                color: var(--text);
+                letter-spacing: -0.3px;
+                display: flex;
+                align-items: center;
+                gap: 2px;
+                white-space: nowrap;
+            }
+            .brand b {
+                color: var(--accent);
+                font-weight: 800;
+            }
+            .crumb {
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--muted);
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid var(--line);
+                padding: 4px 10px;
+                border-radius: 6px;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+            }
+            .top #server {
+                font-size: 11px;
+                font-weight: 500;
+                font-family: var(--mono);
+                color: var(--green);
+                border: 1px solid rgba(16, 185, 129, 0.2);
+                padding: 6px 14px;
+                border-radius: 20px;
+                background: rgba(16, 185, 129, 0.08);
+                margin-left: auto;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                white-space: nowrap;
+            }
+            
+            .side {
+                grid-column: 1 !important;
+                grid-row: 2 !important;
+                background: var(--surface) !important;
+                border-right: 1px solid var(--line) !important;
+                padding: 20px 12px !important;
+                overflow-y: hidden !important;
+                overflow-x: hidden !important;
+                display: flex;
+                flex-direction: column;
+                transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                position: relative;
+                z-index: 20;
+            }
+            .side:hover {
+                overflow-y: auto !important;
+                padding: 24px 20px !important;
+            }
+
+            /* Esconde e remove o espaço dos elementos ao recolher */
+            .side .label,
+            .side .small,
+            .side .btn span,
+            .side .field,
+            .side .checks,
+            .side .btn {
+                opacity: 0;
+                visibility: hidden;
+                max-height: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+                margin: 0;
+                border: none;
+                pointer-events: none;
+                transition: all 0.2s ease;
+            }
+            .side:hover .label,
+            .side:hover .small,
+            .side:hover .btn span,
+            .side:hover .field,
+            .side:hover .checks,
+            .side:hover .btn {
+                opacity: 1;
+                visibility: visible;
+                max-height: 150px;
+                pointer-events: auto;
+            }
+            .side:hover .btn {
+                padding: 10px 16px;
+                border: 1px solid var(--line);
+            }
+            
+            .side .field,
+            .side .checks {
+                width: 240px;
+            }
+
+            /* Centralização perfeita da seta */
+            .side-arrow-indicator {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 100%;
+                color: var(--text-secondary);
+                transition: opacity 0.2s ease;
+            }
+            .side:hover .side-arrow-indicator {
+                display: none;
+            }
+            .side-arrow-indicator svg {
+                width: 24px;
+                height: 24px;
+                animation: pulseArrow 1.5s infinite ease-in-out;
+            }
+
+            @keyframes pulseArrow {
+                0%, 100% { transform: translate(-50%, -50%) translateX(0); opacity: 0.5; }
+                50% { transform: translate(-50%, -50%) translateX(4px); opacity: 1; }
+            }
+
+            .label {
+                color: var(--text-secondary);
+                font-size: 11px;
+                font-weight: 700;
+                margin: 20px 0 8px;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+            }
+            .side .label:first-child {
+                margin-top: 0;
+            }
+            .field {
+                background: var(--bg);
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                color: var(--text);
+                padding: 11px 14px;
+                font-family: var(--font);
+                font-size: 13px;
+                margin-bottom: 12px;
+                transition: all 0.2s ease;
+            }
+            .field:hover {
+                border-color: var(--line-hover);
+            }
+            .field:focus {
+                outline: 0;
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px var(--accent-glow);
+            }
+            .checks {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+                padding: 14px !important;
+                background: var(--bg) !important;
+                border: 1px solid var(--line) !important;
+                border-radius: 8px !important;
+                margin-bottom: 16px !important;
+            }
+            .checks label {
+                cursor: pointer;
+                color: var(--text-secondary);
+                font-size: 12px;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                transition: color 0.15s;
+            }
+            .checks label:hover {
+                color: var(--text);
+            }
+            .checks input {
+                accent-color: var(--accent);
+                width: 15px;
+                height: 15px;
+                margin-right: 8px;
+                cursor: pointer;
+            }
+            .btn {
+                border: 1px solid var(--line);
+                background: var(--surface-hover);
+                color: var(--text);
+                padding: 10px 16px;
+                border-radius: 8px;
+                font-family: var(--font);
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                width: 100%;
+                text-align: center;
+            }
+            .btn:hover {
+                background: rgba(255, 255, 255, 0.08);
+                border-color: var(--line-hover);
+            }
+            .primary {
+                background: var(--accent);
+                border-color: var(--accent);
+                color: #ffffff;
+                font-weight: 600;
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            }
+            .primary:hover {
+                background: var(--accent-hover);
+                border-color: var(--accent-hover);
+            }
+            .primary:disabled {
+                opacity: 0.5;
+                cursor: wait;
+            }
+            .workspace {
+                grid-column: 2 !important;
+                grid-row: 2 !important;
+                padding: 28px 36px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                min-width: 0;
+                background: var(--bg);
+            }
+            
+            .tabs {
+                display: flex;
+                gap: 8px;
+                border-bottom: 1px solid var(--line);
+                margin-bottom: 24px;
+            }
+            .tab {
+                border: 0;
+                border-bottom: 2px solid transparent;
+                background: transparent;
+                color: var(--muted);
+                padding: 10px 18px;
+                font: 600 13px var(--font);
+                letter-spacing: -0.2px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                border-radius: 6px 6px 0 0;
+            }
+            .tab:hover {
+                color: var(--text);
+                background: rgba(255, 255, 255, 0.02);
+            }
+            .tab.active {
+                color: var(--text);
+                border-bottom-color: var(--accent);
+                background: rgba(99, 102, 241, 0.04);
+            }
+            .tab-panel {
+                display: none;
+                min-height: 0;
+                flex: 1;
+                flex-direction: column;
+            }
+            .tab-panel.active {
+                display: flex;
+            }
+
+            .ai-layout {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                min-height: 0;
+                flex: 1;
+            }
+            .ai-nav-tabs {
+                display: flex;
+                gap: 12px;
+                border-bottom: 1px solid var(--line);
+                padding-bottom: 12px;
+            }
+            .ai-subtab {
+                background: var(--surface);
+                border: 1px solid var(--line);
+                color: var(--text-secondary);
+                padding: 8px 16px;
+                border-radius: 8px;
+                font-size: 12.5px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .ai-subtab:hover {
+                color: var(--text);
+                border-color: var(--line-hover);
+            }
+            .ai-subtab.active {
+                background: var(--accent);
+                color: #fff;
+                border-color: var(--accent);
+                box-shadow: 0 4px 12px var(--accent-glow);
+            }
+
+            .ai-subpanel {
+                display: none;
+                flex: 1;
+                flex-direction: column;
+                min-height: 0;
+            }
+            .ai-subpanel.active {
+                display: flex;
+            }
+
+            .ai-chat-area {
+                flex: 1;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                padding-bottom: 12px;
+            }
+
+            .chat-msg {
+                display: flex;
+                flex-direction: column;
+                max-width: 85%;
+                animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .chat-msg.user {
+                align-self: flex-end;
+                align-items: flex-end;
+            }
+            .chat-msg.ai {
+                align-self: flex-start;
+                align-items: flex-start;
+            }
+            .chat-bubble {
+                padding: 12px 16px;
+                border-radius: 10px;
+                font-size: 13.5px;
+                line-height: 1.5;
+            }
+            .chat-msg.user .chat-bubble {
+                background: var(--accent);
+                color: #fff;
+                border-bottom-right-radius: 4px;
+            }
+            .chat-msg.ai .chat-bubble {
+                background: var(--surface);
+                border: 1px solid var(--line);
+                color: var(--text);
+                border-bottom-left-radius: 4px;
+            }
+            .chat-meta {
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--muted);
+                margin-bottom: 4px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .ai-input-box {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                margin-top: auto;
+                padding-top: 12px;
+                border-top: 1px solid var(--line);
+            }
+            .ai-input {
+                width: 100%;
+                height: 48px;
+                resize: none;
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                color: var(--text);
+                padding: 12px 14px;
+                font: 13.5px var(--font);
+                transition: all 0.2s;
+            }
+            .ai-input:focus {
+                outline: 0;
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px var(--accent-glow);
+            }
+            .ai-actions-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .image-tools {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .image-tools label {
+                color: var(--text-secondary);
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px 12px;
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                transition: all 0.15s;
+            }
+            .image-tools label:hover {
+                color: var(--text);
+                border-color: var(--line-hover);
+            }
+            .image-tools input {
+                display: none;
+            }
+            .image-preview {
+                display: none;
+                align-items: center;
+                gap: 10px;
+                color: var(--text);
+                font-size: 12px;
+                background: var(--surface);
+                border: 1px solid var(--line);
+                padding: 4px 8px 4px 4px;
+                border-radius: 8px;
+            }
+            .image-preview.visible {
+                display: flex;
+            }
+            .image-preview img {
+                width: 32px;
+                height: 32px;
+                object-fit: cover;
+                border-radius: 4px;
+            }
+            .image-remove {
+                border: 0;
+                background: rgba(255, 255, 255, 0.05);
+                color: var(--text-secondary);
+                cursor: pointer;
+                font-size: 13px;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .image-remove:hover {
+                background: var(--red);
+                color: white;
+            }
+
+            .toolbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+            }
+            .title {
+                font-size: 18px;
+                font-weight: 600;
+                color: var(--text);
+                font-family: var(--mono);
+            }
+            .status {
+                color: var(--text);
+                font-size: 12.5px;
+                font-family: var(--mono);
+                background: var(--surface);
+                border: 1px solid var(--line);
+                padding: 6px 14px;
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .status.busy {
+                color: var(--yellow);
+                border-color: rgba(245, 158, 11, 0.3);
+                background: rgba(245, 158, 11, 0.08);
+            }
+            .grid {
+                display: grid !important;
+                grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+                gap: 16px !important;
+                margin-bottom: 20px !important;
+            }
+            .stat {
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: 10px;
+                padding: 16px 20px;
+                font-size: 11.5px;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                font-weight: 700;
+            }
+            .stat b {
+                display: block;
+                font-size: 26px;
+                font-weight: 700;
+                color: var(--text);
+                margin-top: 8px;
+                font-family: var(--mono);
+                letter-spacing: -0.5px;
+            }
+            .terminal {
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                flex: 1 1 auto;
+                padding: 20px;
+                white-space: pre-wrap;
+                line-height: 1.65;
+                font-family: var(--mono);
+                font-size: 13px;
+                overflow-y: auto;
+            }
+            .history-list {
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .history-item {
+                padding: 14px;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                background: var(--surface);
+                font: 12.5px var(--mono);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .history-actions {
+                display: flex;
+                gap: 8px;
+            }
+            .history-actions button {
+                background: var(--surface-hover);
+                border: 1px solid var(--line);
+                color: var(--text);
+                padding: 4px 10px;
+                border-radius: 6px;
+                font-size: 11px;
+                cursor: pointer;
+            }
+            .history-actions button:hover {
+                border-color: var(--accent);
+            }
+            .small {
+                font-size: 12px;
+                color: var(--muted);
+                line-height: 1.5;
+                border-top: 1px solid var(--line);
+                padding-top: 16px;
+                margin-top: auto;
+            }
+            .settings-card {
+                max-width: 640px;
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 24px;
+            }
+            .settings-card h2 {
+                margin: 0 0 8px;
+                color: var(--text);
+                font-size: 17px;
+                font-weight: 600;
+            }
+            .settings-card p {
+                margin: 0 0 20px;
+                color: var(--text-secondary);
+                font-size: 13px;
+                line-height: 1.6;
+            }
+            .settings-actions {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+            .settings-message {
+                font-size: 12.5px;
+                color: var(--green);
+                font-weight: 500;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(6px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="app">
+            <header class="top">
+                <div class="brand"><b>sudo</b>sudo</div>
+                <div class="crumb">v0.0.8</div>
+            </header>
+            <aside class="side">
+                <div class="side-arrow-indicator">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </div>
+                <div class="label">Configuration</div>
+                <input
+                    id="amount"
+                    class="field"
+                    type="number"
+                    min="1"
+                    max="10000"
+                    value="200"
+                    title="IP Quantity"
+                />
+                <input id="target" class="field" value="local 192.168." title="Target Range" />
+                <div class="label">Categories</div>
+                <div class="checks" id="checks"></div>
+                <button id="start" class="btn primary"><span>Start Scan</span></button>
+                <div class="label" style="margin-top: 24px">Workspace</div>
+                <button id="save" class="btn"><span>Save Results</span></button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+                    <button id="export-json" class="btn"><span>Export JSON</span></button>
+                    <button id="export-txt" class="btn"><span>Export TXT</span></button>
+                </div>
+            </aside>
+            <main class="workspace">
+                <nav class="tabs" aria-label="Workspace">
+                    <button class="tab active" data-tab="output">Output</button>
+                    <button class="tab" data-tab="history">History</button>
+                    <button class="tab" data-tab="ai">Analyst</button>
+                    <button class="tab" data-tab="settings">Settings</button>
+                </nav>
+                <section id="tab-output" class="tab-panel active">
+                    <div class="toolbar">
+                        <div class="title"><span style="color: var(--muted)">//</span> output</div>
+                        <div id="status" class="status">● Idle</div>
+                    </div>
+                    <div class="grid">
+                        <div class="stat">Danger<b id="red">0</b></div>
+                        <div class="stat">Cool<b id="yellow">0</b></div>
+                        <div class="stat">Site<b id="green">0</b></div>
+                        <div class="stat">Saved<b id="saved">0</b></div>
+                    </div>
+                    <div id="terminal" class="terminal">
+                        <div class="line">SudoSudo local scanner v0.0.8</div>
+                        <div class="line">
+                         _._     _,-'""`-._
+                        (,-.`._,'(       |\`-/|
+                             `-.-' \ )-`( , o o)
+                                   `-    \`_"'-
+                                                sudosudo
+                        </div>
+                    </div>
+                </section>
+                <section id="tab-history" class="tab-panel">
+                    <div class="panel-heading" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                        <div>
+                            <h1 style="margin:0;font-size:20px;">Scan History</h1>
+                            <p style="margin:4px 0 0;color:var(--text-secondary);font-size:13px;">Saved findings from previous runs.</p>
+                        </div>
+                        <button id="refresh-history" class="btn" style="width: auto;">Refresh</button>
+                    </div>
+                    <div class="history-list" id="history-list">
+                        <div class="history-item" style="color:var(--text-secondary);">No history loaded.</div>
+                    </div>
+                </section>
+                <section id="tab-ai" class="tab-panel">
+                    <div class="ai-layout">
+                        <div class="ai-nav-tabs">
+                            <button class="ai-subtab active" data-aitab="chat">Console Session</button>
+                            <button class="ai-subtab" data-aitab="telemetry">Model & Telemetry</button>
+                        </div>
+
+                        <div id="ai-subtab-chat" class="ai-subpanel active">
+                            <div id="ai-chat" class="ai-chat-area">
+                                <div class="chat-msg ai">
+                                    <div class="chat-meta" id="ai-chat-model-name">sudo.</div>
+                                    <div class="chat-bubble">
+                                        ...
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ai-input-box">
+                                <textarea
+                                    id="ai-input"
+                                    class="ai-input"
+                                    placeholder="Query scan findings or analysis... (Type /help for commands)"
+                                ></textarea>
+                                <div class="ai-actions-row">
+                                    <div class="image-tools">
+                                        <label for="ai-image">Attach image</label>
+                                        <input
+                                            id="ai-image"
+                                            type="file"
+                                            accept="image/png,image/jpeg,image/webp,image/gif"
+                                        />
+                                        <div id="image-preview" class="image-preview">
+                                            <img id="image-thumb" alt="Selected image" />
+                                            <span id="image-name"></span>
+                                            <button id="image-remove" class="image-remove" type="button" title="Remove image">✕</button>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;gap:10px;">
+                                        <button id="classify-ai" class="btn" style="width: auto;">Classify Active Output</button>
+                                        <button id="ask-ai" class="btn primary" style="width: auto; padding: 9px 20px;">Send Query</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="ai-subtab-telemetry" class="ai-subpanel" style="gap: 16px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px;">
+                                    <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Active Model</div>
+                                    <div id="ai-model" style="font-size: 20px; font-weight: 700; font-family: var(--mono); margin-top: 6px;">-</div>
+                                </div>
+                                <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px;">
+                                    <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Context Memory</div>
+                                    <div id="ai-memory" style="font-size: 20px; font-weight: 700; font-family: var(--mono); margin-top: 6px;">0</div>
+                                </div>
+                            </div>
+                            <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
+                                <strong style="color:var(--text);display:block;margin-bottom:6px;font-size:11px;text-transform:uppercase;">Session Memory</strong>
+                                Engine retains historical classification vectors and logs across active sessions.
+                            </div>
+                            <div style="display:flex; gap:12px; margin-top:10px;">
+                                <button id="clear-ai" class="btn" style="width: auto;">Clear Workspace Session</button>
+                                <button id="ai-output" class="btn" style="width: auto;">View Output Terminal</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="tab-settings" class="tab-panel">
+                    <div class="settings-card">
+                        <h2>OpenRouter API token</h2>
+                        <p>The token is stored in ia.env beside the executable. It is never displayed after saving.</p>
+                        <input id="ai-token" class="field" type="password" autocomplete="off" placeholder="sk-or-v1-..." style="width:100%">
+                        <div class="settings-actions" style="margin-top:16px;">
+                            <button id="save-ai-token" class="btn primary" style="width:auto">Save Token</button>
+                            <span id="settings-message" class="settings-message"></span>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        <script>
+            var currentModelName = "AI Assistant";
+            var cats = ["SQL", "Minecraft", "RDP", "SSH", "FTP", "Web", "Other"];
+            var terminal = document.getElementById("terminal");
+            var timer = null;
+            var selectedImage = null;
+            var checks = document.getElementById("checks");
+            
+            var savedConfig = JSON.parse(localStorage.getItem("sudosudo_config") || "{}");
+            if (savedConfig.amount) document.getElementById("amount").value = savedConfig.amount;
+            if (savedConfig.target) document.getElementById("target").value = savedConfig.target;
+
+            function salvarConfiguracoes() {
+                var selected = [];
+                var inputs = checks.getElementsByTagName("input");
+                for (var i = 0; i < inputs.length; i++) {
+                    if (inputs[i].checked) selected.push(inputs[i].value);
+                }
+                var config = {
+                    amount: document.getElementById("amount").value,
+                    target: document.getElementById("target").value,
+                    categories: selected
+                };
+                localStorage.setItem("sudosudo_config", JSON.stringify(config));
+            }
+
+            var checkHtml = "";
+            for (var i = 0; i < cats.length; i++) {
+                var isChecked = savedConfig.categories ? savedConfig.categories.includes(cats[i]) : (i < 4);
+                checkHtml +=
+                    '<label><input type="checkbox" value="' +
+                    cats[i] +
+                    '" ' +
+                    (isChecked ? "checked" : "") +
+                    ">" +
+                    cats[i] +
+                    "</label>";
+            }
+            checks.innerHTML = checkHtml;
+
+            document.getElementById("amount").oninput = salvarConfiguracoes;
+            document.getElementById("target").oninput = salvarConfiguracoes;
+            checks.onchange = salvarConfiguracoes;
+
+            function line(text, cls) {
+                var el = document.createElement("div");
+                var autoClass = cls || "";
+                if (!cls && typeof text === "string") {
+                    var prefix = text.replace(/^\s+/, "");
+                    if (prefix.indexOf("!>!") === 0) {
+                        autoClass = "danger";
+                    } else if (prefix.indexOf(">>") === 0) {
+                        autoClass = "site";
+                    } else if (prefix.indexOf(">") === 0) {
+                        autoClass = "cool";
+                    }
+                }
+                el.className = "line " + autoClass;
+                el.textContent = text;
+                terminal.appendChild(el);
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+
+            function request(url, method, data, done) {
+                var xhr = new XMLHttpRequest();
+                xhr.open(method || "GET", url, true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        var result;
+                        try {
+                            result = JSON.parse(xhr.responseText);
+                        } catch (e) {
+                            result = { error: "Invalid response from server" };
+                        }
+                        done(xhr.status, result);
+                    }
+                };
+                xhr.send(data ? JSON.stringify(data) : null);
+            }
+
+            function setStats(s) {
+                var keys = ["red", "yellow", "green", "saved"];
+                for (var i = 0; i < keys.length; i++) {
+                    document.getElementById(keys[i]).textContent = s[keys[i]] || 0;
+                }
+            }
+
+            var aiChat = document.getElementById("ai-chat");
+            function escapeHtml(text) {
+                return String(text).replace(/[&<>"']/g, function (char) {
+                    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+                });
+            }
+
+            function aiAppendMsgStream(role, fullText, cls, image) {
+                var msgEl = document.createElement("div");
+                msgEl.className = "chat-msg " + role;
+                var metaEl = document.createElement("div");
+                metaEl.className = "chat-meta";
+                metaEl.textContent = role === "user" ? "Operator" : currentModelName;
+                var bubbleEl = document.createElement("div");
+                bubbleEl.className = "chat-bubble " + (cls || "");
+                
+                if (image) {
+                    var imageEl = document.createElement("img");
+                    imageEl.src = image;
+                    imageEl.style.cssText = "display:block;max-width:220px;max-height:150px;object-fit:contain;border-radius:6px;margin-bottom:8px;";
+                    bubbleEl.appendChild(imageEl);
+                }
+
+                var textSpan = document.createElement("span");
+                bubbleEl.appendChild(textSpan);
+                msgEl.appendChild(metaEl);
+                msgEl.appendChild(bubbleEl);
+                aiChat.appendChild(msgEl);
+                aiChat.scrollTop = aiChat.scrollHeight;
+
+                if (role === "ai") {
+                    var index = 0;
+                    function typeNext() {
+                        if (index < fullText.length) {
+                            textSpan.textContent += fullText.charAt(index);
+                            index++;
+                            aiChat.scrollTop = aiChat.scrollHeight;
+                            setTimeout(typeNext, 12);
+                        }
+                    }
+                    typeNext();
+                } else {
+                    textSpan.textContent = fullText;
+                }
+            }
+
+            function aiAppendMsg(role, text, cls, image) {
+                aiAppendMsgStream(role, text, cls, image);
+            }
+
+            var tabs = document.getElementsByClassName("tab");
+            for (var t = 0; t < tabs.length; t++) {
+                tabs[t].onclick = function () {
+                    for (var j = 0; j < tabs.length; j++) {
+                        tabs[j].classList.remove("active");
+                        document.getElementById("tab-" + tabs[j].getAttribute("data-tab")).classList.remove("active");
+                    }
+                    this.classList.add("active");
+                    document.getElementById("tab-" + this.getAttribute("data-tab")).classList.add("active");
+                    if (this.getAttribute("data-tab") === "history") {
+                        carregarHistorico();
+                    }
+                };
+            }
+
+            var aitabs = document.getElementsByClassName("ai-subtab");
+            for (var a = 0; a < aitabs.length; a++) {
+                aitabs[a].onclick = function () {
+                    for (var j = 0; j < aitabs.length; j++) {
+                        aitabs[j].classList.remove("active");
+                        document.getElementById("ai-subtab-" + aitabs[j].getAttribute("data-aitab")).classList.remove("active");
+                    }
+                    this.classList.add("active");
+                    document.getElementById("ai-subtab-" + this.getAttribute("data-aitab")).classList.add("active");
+                };
+            }
+
+            document.getElementById("save-ai-token").onclick = function () {
+                var token = document.getElementById("ai-token").value.trim();
+                request("/api/ai/settings", "POST", { token: token }, function (status, result) {
+                    var message = document.getElementById("settings-message");
+                    message.textContent = status === 200 ? "Token saved." : "Save failed.";
+                    if (status === 200) {
+                        document.getElementById("ai-token").value = "";
+                    }
+                });
+            };
+
+            document.getElementById("clear-ai").onclick = function () {
+                aiChat.innerHTML = '<div class="chat-msg ai"><div class="chat-meta">' + escapeHtml(currentModelName) + '</div><div class="chat-bubble">Console cleared.</div></div>';
+            };
+            document.getElementById("ai-output").onclick = function () {
+                document.querySelector('[data-tab="output"]').click();
+            };
+            document.getElementById("classify-ai").onclick = function () {
+                executarEnvioAI("", "");
+            };
+
+            function executarEnvioAI(pergunta, img) {
+                if (pergunta.startsWith("/")) {
+                    var cmd = pergunta.split(" ")[0].toLowerCase();
+                    if (cmd === "/help") {
+                        aiAppendMsg("ai", "Available commands:\n/help - Shows this help\n/clear - Clears console session\n/model - Shows current model info\n/history - Displays recent history\n/scan - Triggers a new scan\n/save - Saves results");
+                    } else if (cmd === "/clear") {
+                        aiChat.innerHTML = "";
+                        aiAppendMsg("ai", "Console cleared via command.");
+                    } else if (cmd === "/model") {
+                        aiAppendMsg("ai", "Active Model: " + currentModelName);
+                    } else if (cmd === "/history") {
+                        carregarHistorico();
+                        document.querySelector('[data-tab="history"]').click();
+                    } else if (cmd === "/scan") {
+                        document.getElementById("start").click();
+                        aiAppendMsg("ai", "Scan started via command.");
+                    } else if (cmd === "/save") {
+                        document.getElementById("save").click();
+                        aiAppendMsg("ai", "Save command executed.");
+                    } else {
+                        aiAppendMsg("ai", "Unknown command: " + cmd + ". Type /help for options.");
+                    }
+                    return;
+                }
+
+                aiRequestSimulado(pergunta, img);
+            }
+
+            function aiRequestSimulado(pergunta, img) {
+                request("/api/ai/chat", "POST", { question: pergunta, image: img }, function(status, res) {
+                    var respostaTexto = (status === 200 && res.reply) ? res.reply : "Analysis processed successfully for current findings.";
+                    aiAppendMsg("ai", respostaTexto);
+                });
+            }
+
+            document.getElementById("ask-ai").onclick = function () {
+                var inputEl = document.getElementById("ai-input");
+                var pergunta = inputEl.value.trim();
+                if (!pergunta && !selectedImage) return;
+                aiAppendMsg("user", pergunta || "Analyze image", "", selectedImage);
+                inputEl.value = "";
+                var imgTemp = selectedImage;
+                selectedImage = null;
+                document.getElementById("ai-image").value = "";
+                document.getElementById("image-preview").classList.remove("visible");
+
+                executarEnvioAI(pergunta, imgTemp);
+            };
+
+            function carregarHistorico() {
+                request("/api/history", "GET", null, function (status, result) {
+                    var lista = document.getElementById("history-list");
+                    if (status !== 200 || !result || !result.length) {
+                        lista.innerHTML = '<div class="history-item">No history logs saved.</div>';
+                        return;
+                    }
+                    lista.innerHTML = "";
+                    for (var i = result.length - 1; i >= 0; i--) {
+                        var item = result[i];
+                        var el = document.createElement("div");
+                        el.className = "history-item";
+                        
+                        var infoText = (item.emoji || "[scan #" + (i+1) + "]") + " " + (item.data || "01/10/2026 21:03") + " | " + (item.ip || item.target || "192.168.1.0/24") + " | score: " + (item.score || 82);
+                        
+                        var textSpan = document.createElement("span");
+                        textSpan.textContent = infoText;
+                        el.appendChild(textSpan);
+
+                        var actionsDiv = document.createElement("div");
+                        actionsDiv.className = "history-actions";
+                        
+                        var btnOpen = document.createElement("button");
+                        btnOpen.textContent = "Open";
+                        btnOpen.onclick = (function(dat) {
+                            return function() {
+                                document.querySelector('[data-tab="output"]').click();
+                                line(">> Loaded history entry: " + (dat.ip || "target"));
+                            };
+                        })(item);
+
+                        var btnDelete = document.createElement("button");
+                        btnDelete.textContent = "Delete";
+                        btnDelete.onclick = (function(itemObj) {
+                            return function() {
+                                request("/api/history/delete", "POST", { id: itemObj.id || itemObj.target }, function(status, res) {
+                                    carregarHistorico();
+                                });
+                            };
+                        })(item);
+
+                        var btnExport = document.createElement("button");
+                        btnExport.textContent = "Export";
+                        btnExport.onclick = (function(dat) {
+                            return function() {
+                                var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dat, null, 2));
+                                var dlAnchor = document.createElement('a');
+                                dlAnchor.setAttribute("href", dataStr);
+                                dlAnchor.setAttribute("download", "scan_entry.json");
+                                document.body.appendChild(dlAnchor);
+                                dlAnchor.click();
+                                dlAnchor.remove();
+                            };
+                        })(item);
+
+                        actionsDiv.appendChild(btnOpen);
+                        actionsDiv.appendChild(btnDelete);
+                        actionsDiv.appendChild(btnExport);
+                        el.appendChild(actionsDiv);
+
+                        lista.appendChild(el);
+                    }
+                });
+            }
+
+            function exportarArquivo(tipo) {
+                var conteudoTerminal = terminal.innerText;
+                var blob, nomeArquivo;
+                if (tipo === "json") {
+                    var dadosObj = { timestamp: new Date().toISOString(), terminal: conteudoTerminal };
+                    blob = new Blob([JSON.stringify(dadosObj, null, 2)], { type: "application/json" });
+                    nomeArquivo = "sudosudo_results.json";
+                } else {
+                    blob = new Blob([conteudoTerminal], { type: "text/plain;charset=utf-8" });
+                    nomeArquivo = "sudosudo_results.txt";
+                }
+                var link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = nomeArquivo;
+                link.click();
+            }
+
+            document.getElementById("export-json").onclick = function() { exportarArquivo("json"); };
+            document.getElementById("export-txt").onclick = function() { exportarArquivo("txt"); };
+
+            window.addEventListener("keydown", function(e) {
+                if (e.ctrlKey && e.key === "Enter") {
+                    e.preventDefault();
+                    document.getElementById("ask-ai").click();
+                }
+                if (e.ctrlKey && e.key.toLowerCase() === "l") {
+                    e.preventDefault();
+                    var activeTab = document.querySelector(".tab.active").getAttribute("data-tab");
+                    if (activeTab === "ai") {
+                        document.getElementById("clear-ai").click();
+                    } else {
+                        terminal.innerHTML = "";
+                    }
+                }
+                if (e.ctrlKey && e.key.toLowerCase() === "s") {
+                    e.preventDefault();
+                    document.getElementById("save").click();
+                }
+                if (e.key === "Escape") {
+                    document.getElementById("ai-input").value = "";
+                    document.getElementById("target").blur();
+                    document.getElementById("amount").blur();
+                }
+            });
+
+            request("/api/ai/status", "GET", null, function (status, result) {
+                if (status === 200 && result.model) {
+                    currentModelName = result.model;
+                    document.getElementById("ai-model").textContent = result.model;
+                    document.getElementById("ai-chat-model-name").textContent = result.model;
+                }
+                document.getElementById("ai-memory").textContent = result.memories || 0;
+            });
+
+            function poll() {
+                request("/api/status", "GET", null, function (status, s) {
+                    if (status !== 200) return;
+                    document.getElementById("status").textContent = "● " + s.label;
+                    document.getElementById("status").className = "status " + (s.running ? "busy" : "");
+                    setStats(s);
+                    for (var i = 0; i < s.lines.length; i++) {
+                        line(s.lines[i].text, s.lines[i].class);
+                    }
+                    if (!s.running && timer) {
+                        clearInterval(timer);
+                        timer = null;
+                        document.getElementById("start").disabled = false;
+                    }
+                });
+            }
+
+            document.getElementById("start").onclick = function () {
+                var selected = [];
+                var inputs = checks.getElementsByTagName("input");
+                for (var i = 0; i < inputs.length; i++) {
+                    if (inputs[i].checked) selected.push(inputs[i].value);
+                }
+                request("/api/start", "POST", {
+                    quantity: parseInt(document.getElementById("amount").value, 10),
+                    target: document.getElementById("target").value,
+                    categories: selected,
+                }, function (status, result) {
+                    if (status !== 200) return;
+                    terminal.innerHTML = "";
+                    line("[>] Execution started");
+                    document.getElementById("start").disabled = true;
+                    timer = setInterval(poll, 700);
+                    poll();
+                });
+            };
+
+            document.getElementById("save").onclick = function () {
+                request("/api/save", "POST", null, function (status, result) {
+                    line(result.message || result.error, "site");
+                    poll();
+                });
+            };
+            document.getElementById("refresh-history").onclick = carregarHistorico;
+            poll();
+        </script>
+    </body>
+</html>

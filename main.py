@@ -1,4 +1,4 @@
-##pyinstaller --clean --onefile --windowed --name SudoSudo --workpath "build_chromium" --distpath "dist_chromium" --icon="sudosudo.ico" --add-data "ip_things\sudosudo\ia.env;." --collect-all webview --collect-all pythonnet --collect-all clr_loader --hidden-import=webview.platforms.edgechromium --hidden-import=pythonnet "ip_things\sudosudo\main.py"
+# pyinstaller --clean --onefile --windowed --name SudoSudo --workpath "build_chromium" --distpath "dist_chromium" --icon="sudosudo.ico" --add-data "ip_things\sudosudo\ia.env;." --collect-all webview --collect-all pythonnet --collect-all clr_loader --hidden-import=webview.platforms.edgechromium --hidden-import=pythonnet "ip_things\sudosudo\main.py"
 # A chave deve ficar em ia.env ou OPENROUTER_API_KEY, nunca no codigo-fonte.
 
 import socket
@@ -268,143 +268,10 @@ def salvar_historico(lista):
     with open(ARQUIVO_HISTORICO, "w", encoding="utf-8") as f:
         json.dump(lista, f, ensure_ascii=False, indent=2)
 
-#.termi
 
-HTML = r'''<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SudoSudo</title>
-<style>
-:root{--bg:#000000;--panel:#000000;--panel2:#000000;--panel3:#000000;--line:#ffffff;--text:#ffffff;--muted:#ffffff;--blue:#ffffff;--green:#ffffff;--yellow:#ffffff;--red:#ffffff;--font:"Trebuchet MS","Segoe UI",sans-serif;--mono:"JetBrains Mono",Consolas,"Courier New",monospace}
-*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font)}
-.app{display:grid!important;position:relative!important;grid-template-columns:280px minmax(0,1fr)!important;grid-template-rows:60px minmax(0,1fr)!important;width:100vw!important;height:100vh!important;overflow:hidden!important}
-.top{grid-column:1/3!important;grid-row:1!important;background:#000000!important;border-bottom:1px solid var(--line)!important;display:flex!important;align-items:center!important;padding:0 24px!important;gap:16px!important}
-.brand{font-size:16px;font-weight:700;color:#ffffff;letter-spacing:.5px}.brand b{color:#ffffff;text-decoration:underline}.crumb{font-size:11px;color:var(--muted);border-left:1px solid var(--line);padding-left:16px;text-transform:uppercase;letter-spacing:1px}
-.top #server{font-size:11px;font-family:var(--mono);color:#ffffff;border:1px solid #ffffff;padding:4px 12px;border-radius:20px;background:#000000;margin-left:auto}
-.side{grid-column:1!important;grid-row:2!important;background:var(--panel)!important;border-right:1px solid var(--line)!important;padding:24px 20px!important;overflow-y:auto!important}
-.label{color:var(--muted);font-size:11px;font-weight:600;margin:16px 0 8px;text-transform:uppercase;letter-spacing:1px}.side .label:first-child{margin-top:0}
-.field{width:100%;background:#000000;border:1px solid var(--line);border-radius:6px;color:var(--text);padding:10px 12px;font-family:var(--font);font-size:13px;margin-bottom:12px;transition:border-color .15s,box-shadow .15s}.field:focus{outline:0;border-color:#ffffff;box-shadow:0 0 0 2px #ffffff}
-.checks{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;padding:12px!important;background:#000000!important;border:1px solid var(--line)!important;border-radius:6px!important;margin-bottom:16px!important}.checks label{cursor:pointer;color:var(--text);font-size:12px;display:flex;align-items:center}.checks input{accent-color:#ffffff;margin-right:8px}
-.btn{border:1px solid var(--line);background:#000000;color:var(--text);padding:10px 14px;border-radius:6px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,border-color .15s}.btn:hover{background:#ffffff;color:#000000}
-.primary{width:100%;background:#ffffff;border-color:#ffffff;color:#000000;font-weight:600}.primary:hover{background:#000000;color:#ffffff}.primary:disabled{opacity:.5;cursor:wait}
-.workspace{grid-column:2!important;grid-row:2!important;padding:24px 32px!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;min-width:0}.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:20px}.tab{border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);padding:11px 16px;font:600 12px var(--font);letter-spacing:.5px;cursor:pointer}.tab:hover,.tab.active{color:#ffffff;border-bottom-color:#ffffff}.tab-panel{display:none;min-height:0;flex:1;flex-direction:column}.tab-panel.active{display:flex}.panel-heading{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}.panel-heading h1{margin:0;color:#ffffff;font-size:22px;letter-spacing:.2px}.panel-heading p{margin:5px 0 0;color:var(--muted);font-size:12px}
-
-/* AI Layout Modernizado */
-.ai-layout{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:20px;min-height:0;flex:1}
-.ai-card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:0;display:flex;flex-direction:column;min-height:0;overflow:hidden}
-.ai-header-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
-.ai-header-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px}
-.ai-header-title::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffffff}
-.ai-chat{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;background:#000000}
-
-/* Chat Messages Formatting */
-.chat-msg{display:flex;flex-direction:column;max-width:85%;animation:fadeIn .2s ease-in-out}
-.chat-msg.user{align-self:flex-end;align-items:flex-end}
-.chat-msg.ai{align-self:flex-start;align-items:flex-start}
-.chat-bubble{padding:12px 16px;border-radius:10px;font-size:13px;line-height:1.6;position:relative}
-.chat-msg.user .chat-bubble{background:#ffffff;border:1px solid #ffffff;color:#000000;border-bottom-right-radius:2px}
-.chat-msg.ai .chat-bubble{background:#000000;border:1px solid #ffffff;color:#ffffff;border-bottom-left-radius:2px}
-.chat-meta{font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
-
-.ai-input-container{padding:16px;background:var(--panel);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
-.ai-input-wrapper{position:relative;display:flex;align-items:center}
-.ai-input{width:100%;height:52px;resize:none;background:#000000;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:14px 16px;font:13px var(--font);transition:border-color .15s}
-.ai-input:focus{outline:0;border-color:#ffffff;box-shadow:0 0 0 2px #ffffff}
-.ai-controls{display:flex;align-items:center;justify-content:space-between;gap:10px}.image-tools{display:flex;align-items:center;gap:10px;min-height:28px}.image-tools label{color:var(--muted);font-size:11px;cursor:pointer;text-decoration:underline}.image-tools input{display:none}.image-preview{display:none;align-items:center;gap:8px;color:var(--text);font-size:11px}.image-preview.visible{display:flex}.image-preview img{width:34px;height:34px;object-fit:cover;border-radius:5px;border:1px solid var(--line)}.image-remove{border:0;background:transparent;color:#ffffff;cursor:pointer;font-size:16px}
-
-.ai-sidebar{display:flex;flex-direction:column;gap:16px}
-.ai-sidebar .stat-card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:16px}
-.ai-sidebar .stat-card .title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600}
-.ai-sidebar .stat-card .value{font-size:20px;font-weight:700;color:#ffffff;margin-top:6px;font-family:var(--mono)}
-
-.memory-note{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:16px;color:var(--muted);font-size:12px;line-height:1.5}
-.memory-note strong{color:#ffffff;display:block;margin-bottom:6px;font-size:11px;text-transform:uppercase;letter-spacing:1px}
-
-/* Typography Helpers */
-.md p{margin:0 0 8px}.md p:last-child{margin:0}
-.md code{background:#000000;color:#ffffff;border:1px solid #ffffff;border-radius:4px;padding:2px 6px;font:12px var(--mono)}
-.md pre{background:#000000;border:1px solid var(--line);border-radius:6px;padding:12px;margin:8px 0;overflow-x:auto}
-.md ul{margin:6px 0;padding-left:18px}.md li{margin:3px 0}
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-
-.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}.title{font-size:20px;font-weight:600;color:#ffffff}.status{color:#ffffff;font-size:13px;font-family:var(--mono)}.status.busy{color:#ffffff;text-decoration:underline}
-.grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px!important;margin-bottom:20px!important}.stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 20px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.stat b{display:block;font-size:24px;font-weight:600;color:#ffffff;margin-top:6px;font-family:var(--mono)}
-.terminal{background:var(--panel2);border:1px solid var(--line);border-radius:8px;flex:1 1 auto;padding:16px;white-space:pre-wrap;line-height:1.6;font-family:var(--mono);font-size:13px;overflow-y:auto;user-select:text;cursor:text}
-.history-card{background:#000000;border:1px solid var(--line);border-radius:10px;padding:16px}
-.history-list{overflow-y:auto;display:flex;flex-direction:column;gap:8px}.history-item{padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2);font:12px var(--mono)}
-.line{padding:2px 0;word-break:break-all}.danger{color:#ffffff;font-weight:bold}.cool{color:#ffffff;font-style:italic}.site{color:#ffffff;text-decoration:underline}
-.small{font-size:12px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:16px;margin-top:24px}
-.settings-card{max-width:620px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:20px}.settings-card h2{margin:0 0 8px;color:#ffffff;font-size:16px}.settings-card p{margin:0 0 18px;color:var(--muted);font-size:12px;line-height:1.5}.settings-actions{display:flex;align-items:center;gap:12px}.settings-message{font-size:12px;color:var(--muted)}
-@media(max-width:760px){.app{display:block!important;height:auto!important;min-height:100vh!important;overflow:auto!important}.top{height:60px!important}.side,.workspace{display:block!important;width:100%!important;height:auto!important}.workspace{padding:20px!important}.terminal{height:400px!important}.grid{grid-template-columns:repeat(2,1fr)!important}.tabs{overflow-x:auto}.ai-layout{grid-template-columns:1fr}.ai-sidebar{display:grid;grid-template-columns:1fr 1fr}.ai-sidebar .memory-note{grid-column:1/-1}}
-</style></head><body><div class="app"><header class="top"><div class="brand"><b>sudo</b>sudo</div><div class="crumb">v0.0.7</div><div style="margin-left:auto" id="server">● LOCAL SOCKET</div></header>
-<aside class="side"><div class="label">Scan Configuration</div><input id="amount" class="field" type="number" min="1" max="10000" value="200" title="IP Quantity"><input id="target" class="field" value="local 192.168." title="Target Range"><div class="label">Categories</div><div class="checks" id="checks"></div><button id="start" class="btn primary">Start Scan</button><div class="label" style="margin-top:24px">Workspace</div><button id="save" class="btn" style="width:100%">Save Results</button><p class="small">Authorized networks and systems only.</p></aside>
-<main class="workspace"><nav class="tabs" aria-label="Workspace"><button class="tab active" data-tab="output">Output</button><button class="tab" data-tab="history">History</button><button class="tab" data-tab="ai">AI Analyst</button></nav><section id="tab-output" class="tab-panel active"><div class="toolbar"><div class="title"><span style="color:var(--muted)">// output</span></div><div id="status" class="status">● Idle</div></div><div class="grid"><div class="stat">Danger<b id="red">0</b></div><div class="stat">Cool<b id="yellow">0</b></div><div class="stat">Site<b id="green">0</b></div><div class="stat">Saved<b id="saved">0</b></div></div><div id="terminal" class="terminal"><div class="line">SudoSudo local scanner v0.0.7</div><div class="line">Ready to scan authorized targets.</div></div></section><section id="tab-history" class="tab-panel"><div class="panel-heading"><div><h1>Scan History</h1><p>Saved findings from previous runs.</p></div><button id="refresh-history" class="btn">Refresh</button></div><div class="history-card history-list" id="history-list"><div class="memory-note">No history loaded.</div></div></section><section id="tab-ai" class="tab-panel"><div class="panel-heading"><div><h1>AI Intelligence Console</h1><p>Real-time threat assessment and telemetry parsing.</p></div><div id="ai-state" class="status">Checking status...</div></div><div class="ai-layout"><div class="ai-card"><div class="ai-header-bar"><div class="ai-header-title">Console Session</div><button id="clear-ai" class="btn" style="padding:4px 10px;font-size:11px">Clear Workspace</button></div><div id="ai-chat" class="ai-chat"><div class="chat-msg ai"><div class="chat-meta" id="ai-chat-model-name">AI Assistant</div><div class="chat-bubble md">Ready to process scan telemetry. Ask a query or trigger automated classification.</div></div></div><div class="ai-input-container"><div class="ai-input-wrapper"><textarea id="ai-input" class="ai-input" placeholder="Query scan findings or analysis..."></textarea></div><div class="image-tools"><label for="ai-image">Attach image</label><input id="ai-image" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><div id="image-preview" class="image-preview"><img id="image-thumb" alt="Selected image"><span id="image-name"></span><button id="image-remove" class="image-remove" type="button" title="Remove image">x</button></div></div><div class="ai-controls"><button id="classify-ai" class="btn">Classify Active Output</button><button id="ask-ai" class="btn primary" style="width:auto;padding:8px 20px">Send Query</button></div></div></div><aside class="ai-sidebar"><div class="stat-card"><div class="title">Active Model</div><div class="value" id="ai-model">-</div></div><div class="stat-card"><div class="title">Context Memory</div><div class="value" id="ai-memory">0</div></div><div class="memory-note"><strong>Session Memory</strong>Engine retains historical classification vectors and logs across active sessions.</div><button id="ai-output" class="btn primary" style="background:var(--panel2);border-color:var(--line);color:var(--text)">View Output Terminal</button></aside></div></section></main></div>
-<script>
-var currentModelName = 'AI Assistant';
-var cats=['SQL','Minecraft','RDP','SSH','FTP','Web','Other'];
-var terminal=document.getElementById('terminal');var timer=null;
-var selectedImage=null;
-var checks=document.getElementById('checks');var checkHtml='';
-for(var i=0;i<cats.length;i++){checkHtml+='<label><input type="checkbox" value="'+cats[i]+'" '+(i<4?'checked':'')+'>'+cats[i]+'</label>';}
-checks.innerHTML=checkHtml;
-function line(text,cls){var el=document.createElement('div');var autoClass=cls||'';if(!cls&&typeof text==='string'){var prefix=text.replace(/^\s+/, '');if(prefix.indexOf('!>!')===0){autoClass='danger';}else if(prefix.indexOf('>>')===0){autoClass='site';}else if(prefix.indexOf('>')===0){autoClass='cool';}}el.className='line '+autoClass;el.textContent=text;terminal.appendChild(el);terminal.scrollTop=terminal.scrollHeight;}
-function request(url,method,data,done){var xhr=new XMLHttpRequest();xhr.open(method||'GET',url,true);xhr.setRequestHeader('Content-Type','application/json');xhr.onreadystatechange=function(){if(xhr.readyState===4){var result;try{result=JSON.parse(xhr.responseText);}catch(e){result={error:'Invalid response from server'};}done(xhr.status,result);}};xhr.send(data?JSON.stringify(data):null);}
-function setStats(s){var keys=['red','yellow','green','saved'];for(var i=0;i<keys.length;i++){document.getElementById(keys[i]).textContent=s[keys[i]]||0;}}
-var aiChat=document.getElementById('ai-chat');
-function escapeHtml(text){return String(text).replace(/[&<>"']/g,function(char){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char];});}
-function inlineMarkdown(text){var safe=escapeHtml(text);safe=safe.replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/__(.*?)__/g,'<strong>$1</strong>').replace(/\*([^*\n]+)\*/g,'<em>$1</em>').replace(/_([^_\n]+)_/g,'<em>$1</em>');return safe;}
-function markdown(text){var linhas=String(text||'').replace(/\r/g,'').split('\n');var html='';var paragrafo=[];var lista=[];var codigo=[];var emCodigo=false;function fecharParagrafo(){if(paragrafo.length){html+='<p>'+paragrafo.map(inlineMarkdown).join('<br>')+'</p>';paragrafo=[];}}function fecharLista(){if(lista.length){html+='<ul>'+lista.map(function(item){return '<li>'+inlineMarkdown(item)+'</li>';}).join('')+'</ul>';lista=[];}}function fecharCodigo(){if(emCodigo){html+='<pre><code>'+escapeHtml(codigo.join('\n'))+'</code></pre>';codigo=[];emCodigo=false;}}for(var i=0;i<linhas.length;i++){var linha=linhas[i];if(/^\s*```/.test(linha)){fecharParagrafo();fecharLista();if(emCodigo){fecharCodigo();}else{emCodigo=true;}continue;}if(emCodigo){codigo.push(linha);continue;}if(/^\s*$/.test(linha)){fecharParagrafo();fecharLista();continue;}var titulo=linha.match(/^\s*(#{1,3})\s+(.+)$/);if(titulo){fecharParagrafo();fecharLista();var nivel=titulo[1].length;html+='<h'+nivel+'>'+inlineMarkdown(titulo[2])+'</h'+nivel+'>';continue;}var item=linha.match(/^\s*[-*+]\s+(.+)$/);if(item){fecharParagrafo();lista.push(item[1]);continue;}var citacao=linha.match(/^\s*>\s?(.+)$/);if(citacao){fecharParagrafo();fecharLista();html+='<blockquote>'+inlineMarkdown(citacao[1])+'</blockquote>';continue;}fecharLista();paragrafo.push(linha);}fecharParagrafo();fecharLista();fecharCodigo();return html;}
-function aiAppendMsg(role, text, cls, image){
-  var msgEl=document.createElement('div');
-  msgEl.className='chat-msg '+role;
-  var metaEl=document.createElement('div');
-  metaEl.className='chat-meta';
-  metaEl.textContent=role==='user'?'Operator':currentModelName;
-  var bubbleEl=document.createElement('div');
-  bubbleEl.className='chat-bubble md '+(cls||'');
-  bubbleEl.innerHTML=markdown(text);
-    if(image){var imageEl=document.createElement('img');imageEl.src=image;imageEl.alt='Attached image';imageEl.style.cssText='display:block;max-width:220px;max-height:150px;object-fit:contain;border-radius:6px;margin-bottom:8px;border:1px solid var(--line)';bubbleEl.insertBefore(imageEl,bubbleEl.firstChild);}
-  msgEl.appendChild(metaEl);
-  msgEl.appendChild(bubbleEl);
-  aiChat.appendChild(msgEl);
-  aiChat.scrollTop=aiChat.scrollHeight;
-}
-function setImage(dataUrl,name){selectedImage=dataUrl;document.getElementById('image-thumb').src=dataUrl;document.getElementById('image-name').textContent=name;document.getElementById('image-preview').classList.add('visible');}
-document.getElementById('ai-image').onchange=function(){var arquivo=this.files[0];if(!arquivo){return;}if(arquivo.size>8*1024*1024){this.value='';aiAppendMsg('ai','Image must be smaller than 8 MB.','danger');return;}var leitor=new FileReader();leitor.onload=function(){setImage(leitor.result,arquivo.name);};leitor.readAsDataURL(arquivo);};
-document.getElementById('image-remove').onclick=function(){selectedImage=null;document.getElementById('ai-image').value='';document.getElementById('image-preview').classList.remove('visible');};
-function aiRequest(path,payload){
-  aiAppendMsg('ai','Processing telemetry...','cool');
-  request(path,'POST',payload,function(status,result){
-    var temp=aiChat.querySelectorAll('.chat-msg.ai');
-    if(temp.length){temp[temp.length-1].remove();}
-    aiAppendMsg('ai', status===200?result.answer:(result.error||'Request execution failed'), status===200?'':'danger');
-  });
-}
-function currentOutput(){var linhas=terminal.getElementsByClassName('line');var saida='';for(var i=0;i<linhas.length;i++){saida+=linhas[i].textContent+'\n';}return saida;}
-document.querySelector('.tabs').insertAdjacentHTML('beforeend','<button class="tab" data-tab="settings">Settings</button>');
-document.querySelector('.workspace').insertAdjacentHTML('beforeend','<section id="tab-settings" class="tab-panel"><div class="panel-heading"><div><h1>Settings</h1><p>Update the AI connection without rebuilding the application.</p></div></div><div class="settings-card"><h2>OpenRouter API token</h2><p>The token is stored in ia.env beside the executable. It is never displayed after saving.</p><input id="ai-token" class="field" type="password" autocomplete="off" placeholder="sk-or-v1-..."><div class="settings-actions"><button id="save-ai-token" class="btn primary" style="width:auto">Save Token</button><span id="settings-message" class="settings-message"></span></div></div></section>');
-document.getElementById('save-ai-token').onclick=function(){var token=document.getElementById('ai-token').value.trim();request('/api/ai/settings','POST',{token:token},function(status,result){var message=document.getElementById('settings-message');message.textContent=status===200?'Token saved.':'Save failed: '+(result.error||'unknown error');if(status===200){document.getElementById('ai-token').value='';document.getElementById('ai-state').textContent=token?'AI Ready':'API key missing';}});};
-var tabs=document.getElementsByClassName('tab');for(var t=0;t<tabs.length;t++){tabs[t].onclick=function(){for(var j=0;j<tabs.length;j++){tabs[j].classList.remove('active');document.getElementById('tab-'+tabs[j].getAttribute('data-tab')).classList.remove('active');}this.classList.add('active');document.getElementById('tab-'+this.getAttribute('data-tab')).classList.add('active');if(this.getAttribute('data-tab')==='history'){carregarHistorico();}};}
-document.getElementById('clear-ai').onclick=function(){
-  aiChat.innerHTML='<div class="chat-msg ai"><div class="chat-meta">'+escapeHtml(currentModelName)+'</div><div class="chat-bubble md">Console cleared. Active telemetry buffer remains attached.</div></div>';
-};
-document.getElementById('ai-output').onclick=function(){document.querySelector('[data-tab="output"]').click();};
-document.getElementById('classify-ai').onclick=function(){aiRequest('/api/ai/classify',{output:currentOutput()});};
-document.getElementById('ask-ai').onclick=function(){
-  var pergunta=document.getElementById('ai-input').value.trim();
-    if(!pergunta && !selectedImage){return;}
-    aiAppendMsg('user', pergunta||'Analyze the attached image.', '', selectedImage);
-  document.getElementById('ai-input').value='';
-    aiRequest('/api/ai/chat',{question:pergunta,output:currentOutput(),image:selectedImage});
-    selectedImage=null;document.getElementById('ai-image').value='';document.getElementById('image-preview').classList.remove('visible');
-};
-function carregarHistorico(){request('/api/history','GET',null,function(status,result){var lista=document.getElementById('history-list');if(status!==200||!result.length){lista.innerHTML='<div class="memory-note">No history logs saved.</div>';return;}lista.innerHTML='';var inicio=Math.max(0,result.length-100);for(var i=result.length-1;i>=inicio;i--){var item=result[i];var el=document.createElement('div');el.className='history-item';el.textContent=(item.emoji||'')+'  '+item.data+' | '+item.ip+' | score '+item.score+'\n'+(item.servicos||[]).join(', ');lista.appendChild(el);}});}
-request('/api/ai/status','GET',null,function(status,result){if(status!==200){document.getElementById('ai-state').textContent='AI unavailable';return;}document.getElementById('ai-state').textContent=result.configured?'● AI Ready':'● API key missing';if(result.model){currentModelName=result.model;document.getElementById('ai-model').textContent=result.model;var initMeta=document.getElementById('ai-chat-model-name');if(initMeta){initMeta.textContent=result.model;}}else{document.getElementById('ai-model').textContent='-';}document.getElementById('ai-memory').textContent=result.memories||0;});
-function poll(){request('/api/status','GET',null,function(status,s){if(status!==200){line('Backend unavailable','danger');return;}document.getElementById('status').textContent='● '+s.label;document.getElementById('status').className='status '+(s.running?'busy':'');setStats(s);for(var i=0;i<s.lines.length;i++){line(s.lines[i].text,s.lines[i].class);}if(!s.running){if(timer){clearInterval(timer);timer=null;}document.getElementById('start').disabled=false;}});}
-document.getElementById('start').onclick=function(){var selected=[];var inputs=checks.getElementsByTagName('input');for(var i=0;i<inputs.length;i++){if(inputs[i].checked){selected.push(inputs[i].value);}}request('/api/start','POST',{quantity:parseInt(document.getElementById('amount').value,10),target:document.getElementById('target').value,categories:selected},function(status,result){if(status!==200){line(result.error||'Failed to start execution','danger');return;}terminal.innerHTML='';line('[>] Execution started');document.getElementById('start').disabled=true;timer=setInterval(poll,700);poll();});};
-document.getElementById('save').onclick=function(){request('/api/save','POST',null,function(status,result){line(result.message||result.error,'site');poll();});};
-document.getElementById('refresh-history').onclick=carregarHistorico;
-poll();
-</script></body></html>'''
+# O HTML foi externo para o arquivo index.html (veja abaixo)
+with open("index.html", "r", encoding="utf-8") as f:
+    HTML = f.read()
 
 
 class ScannerApp:
